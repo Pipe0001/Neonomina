@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: neonuser
+      POSTGRES_PASSWORD: neonpass
+      POSTGRES_DB: neonomina
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    container_name: neon-backend
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=neonuser
+      - DATABASE_PASSWORD=neonpass
+      - DATABASE_NAME=neonomina
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: neon-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:
